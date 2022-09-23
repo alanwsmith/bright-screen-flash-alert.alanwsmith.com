@@ -9,19 +9,43 @@ with a little work too)
 ---
 
 You'll need ffmpeg, imagemagik,
-and fswatch.
+and fswatch. (I think you can get all
+of them from homebrew)
 
 ---
 
-Run this to figure out which screen
-id to use:
+### Instructions
 
-```
-ffmpeg -f avfoundation -list_devices true -i ""
-```
+- Run this to get a list of devices ffmpeg
+  can watch:
 
----
+  ffmpeg -f avfoundation -list_devices true -i ""
 
-References:
+- Edit `src/watch-screen.bash` to set the first
+  number in the `avfoundation -i "#:#"` to the
+  sceen you want
 
-- https://trac.ffmpeg.org/wiki/Capture/Desktop
+- cd two separate terminal windows into `src`
+
+- run: `./yell-when-it-gets-bright.bash`
+
+- then run: `./watch-screen.bash`
+
+- you can adjust the level at which the yell
+  happens by adjusting the number in
+  `if [ $LIGHT_LEVEL_INT -gt 40 ]`
+
+- you can use a different sound by changing
+  `afplay ahhhh.mp3` to point to another file
+
+- the `watch-screen.bash` creates .png file in the
+  `images` directory. The `yell-when-it-gets-bright.bash`
+  file processes them then deletes them.
+
+- If you leave the `watch-screen.bash` file running
+  after closing `yell-when-it-gets-bright.bash`
+  it'll make files that don't get deleted. You can
+  kill them with `rm images/*.png`
+
+- I wrote this pretty quick. Let me know if you
+  hit bugs
