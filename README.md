@@ -22,10 +22,15 @@ I think you can get all of them
 from homebrew
 
 
+
 ### Setup
 
 - Run this to get a list of devices ffmpeg
-  can watch:
+  can watch (You'll get a securty pop-up
+  that'll prompt you to open the security 
+  system preferences and allow your terminal
+  app to record the screen and mic. You'll 
+  have to allow that for the script to work)
 
 ```
 ffmpeg -f avfoundation -list_devices true -i ""
@@ -36,6 +41,7 @@ ffmpeg -f avfoundation -list_devices true -i ""
   sceen you want
 
 ### Run It
+
 
 - cd two separate terminal windows into `src`
 
