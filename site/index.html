@@ -85,7 +85,7 @@
 
     <style>
       body {
-        backgound-color: #232946;
+        background-color: #232946;
         color: #b8c1ec;
         margin: 0;
         padding: 0;
@@ -127,6 +127,9 @@
         padding-bottom: 12px;
         font-size: 0.9rem;
       }
+      li {
+        padding-bottom: 16px;
+      }
     </style>
 
     <script type="text/javascript">
@@ -136,14 +139,93 @@
   </head>
   <body>
     <header>
-      <a href="/">Home</a> ~
       <a href="https://www.alanwsmith.com/">alanwsmith.com</a> ~
       <a href="https://links.alanwsmith.com">links</a> ~
       <a href="https://podcast.alanwsmith.com/">podcast</a>
     </header>
     <main>
       <h1>Bright Screen Flash Alert</h1>
+      <p>
+        The tech streamers I watch in
+        <a
+          href="https://www.twitch.tv/directory/game/Software%20and%20Game%20Development"
+          >Software and Game Dev</a
+        >
+        tend to use dark mode. It's not infrequent that they're looking up
+        documentation and hit a page that's considerably brighter. I thought it
+        would be fun to trigger a little sound alert when that happens.
+      </p>
+      <p>
+        These two scripts set up a quick way to do that on a mac.
+        <a
+          href="https://github.com/alanwsmith/bright-screen-flash-alert.alanwsmith.com"
+          >Pull requests</a
+        >
+        welcome for making it work on windows.
+      </p>
+
+      <h2>The Scripts</h2>
+
+      <hr />
+      <h4>Script 1: watch-screen.bash</h4>
+      <hr />
+      <pre><code>
+#!/bin/bash
+
+ffmpeg -f avfoundation -i "1:0" -vf "fps=2,scale=400:-2" -y images/%04d.png
+      </code></pre>
+
+      <hr />
+      <h4>Script 2: yell-when-it-gets-bright.bash</h4>
+      <hr />
+
+      <pre><code>
+#!/bin/bash
+
+ALERT_THROTTLE=0
+
+fswatch -0 images/ | while read -d "" event
+do 
+    if [ -e "$event" ]
+    then
+        LIGHT_LEVEL_FLOAT=`convert "$event" -colorspace gray -format "%[fx:100*mean]" info:`
+        LIGHT_LEVEL_INT=`printf %.0f "$LIGHT_LEVEL_FLOAT"`
+        echo $LIGHT_LEVEL_INT
+        if [ $LIGHT_LEVEL_INT -gt 40 ]
+        then
+            if [ $ALERT_THROTTLE -eq 0 ]
+            then
+                ALERT_THROTTLE=1
+                afplay ahhhh.mp3
+                echo "YELL"
+            fi
+        else
+            ALERT_THROTTLE=0
+        fi
+        rm "$event"
+    fi
+done
+      </code></pre>
+      <hr />
+      <h2>Usage</h2>
+      <ol>
+        <li>
+          Install `ffmpeg`, `imagemagick`, and `fswatch` which with
+          <a href="https://brew.sh/">Homebrew</a> if you don't already have them
+        </li>
+        <li>
+          Copy the code for the scripts above into two seperate files in the
+          same directory. One for `watch-screen.bash` and one for
+          `yell-when-it-gets-bright.bash`
+        </li>
+        <li>
+          Make the scripts executable from a command line terminal with:<br /><br />chmod
+          u+x watch-screen.bash<br /><br />and<br /><br />chmod u+x
+          yell-when-it-gets-bright.bash`
+        </li>
+      </ol>
     </main>
+
     <footer>
       made by <a href="https://twitter.com/TheIdOfAlan">alan w. smith</a>
       <br />
