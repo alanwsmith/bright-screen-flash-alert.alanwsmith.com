@@ -14,14 +14,20 @@ too with a little work)
 
 - ffmpeg 
 
-- imagemagik
+- imagemagick
 
-- fswatch. 
+- fswatch
 
 I think you can get all of them 
 from homebrew
 
+### The Code
 
+The files themselves are in
+the `site/src` repo. 
+
+Why the odd place? So, I can
+link them easily on the website.
 
 ### Setup
 
