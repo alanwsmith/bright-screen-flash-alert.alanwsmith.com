@@ -130,6 +130,11 @@
       li {
         padding-bottom: 16px;
       }
+      pre {
+        background-color: #1e1d40;
+        padding: 9px;
+        overflow: scroll;
+      }
     </style>
 
     <script type="text/javascript">
@@ -151,17 +156,18 @@
           href="https://www.twitch.tv/directory/game/Software%20and%20Game%20Development"
           >Software and Game Dev</a
         >
-        tend to use dark mode. It's not infrequent that they're looking up
-        documentation and hit a page that's considerably brighter. I thought it
-        would be fun to trigger a little sound alert when that happens.
+        tend to use dark mode. It's not infrequent that they hit pages that are
+        considerally brighter when looking up documentation. I thought it would
+        be fun to trigger a little sound effect for the stream when that
+        happens.
       </p>
       <p>
-        These two scripts set up a quick way to do that on a mac.
+        The two scripts below set up a quick way to do that on a mac.
         <a
           href="https://github.com/alanwsmith/bright-screen-flash-alert.alanwsmith.com"
           >Pull requests</a
         >
-        welcome for making it work on windows.
+        for how to get it working on windows are welcome.
       </p>
 
       <h2>The Scripts</h2>
@@ -207,23 +213,73 @@ do
 done
       </code></pre>
       <hr />
+      <h2>Prerequisites</h2>
+      <p>
+        You'll need `ffmpeg`, `imagemagick`, and `fswatch`. They can be
+        installed with these
+        <a href="https://brew.sh/">Homebrew</a> commands if you don't already
+        have them
+      </p>
+      <p>
+        brew install ffmpeg<br />brew install imagemagick<br />brew install
+        fswatch
+      </p>
+
+      <h2>Setup</h2>
+      <p>
+        The ffmpeg command in the script watches a specifics screen. To tell it
+        which one to watch, run this command:
+      </p>
+
+      <pre><code>
+ffmpeg -f avfoundation -list_devices true -i ""
+        </code></pre>
+
       <h2>Usage</h2>
       <ol>
-        <li>
-          Install `ffmpeg`, `imagemagick`, and `fswatch` which with
-          <a href="https://brew.sh/">Homebrew</a> if you don't already have them
-        </li>
         <li>
           Copy the code for the scripts above into two seperate files in the
           same directory. One for `watch-screen.bash` and one for
           `yell-when-it-gets-bright.bash`
         </li>
         <li>
-          Make the scripts executable from a command line terminal with:<br /><br />chmod
+          Make the scripts executable from a terminal command line with:<br /><br />chmod
           u+x watch-screen.bash<br /><br />and<br /><br />chmod u+x
-          yell-when-it-gets-bright.bash`
+          yell-when-it-gets-bright.bash
+        </li>
+        <li>
+          Download the mp3 file
+          <a
+            href="https://github.com/alanwsmith/bright-screen-flash-alert.alanwsmith.com/blob/main/site/src/ahhhh.mp3?raw=true"
+            >from here</a
+          >
+          and put it in the same directory as the scripts.
+        </li>
+        <li>
+          Make an `images` directory inside the directory you have your scripts
+        </li>
+        <li>
+          Run the scripts from the command line with<br /><br />
+          ./yell-when-it-gets-bright.bash
+          <br />
+          ./watch-screen.bash
         </li>
       </ol>
+      <p>
+        If all goes well, you'll hear the sound trigger each time your screen
+        crosses a certain brightness threshold.
+      </p>
+      <p>
+        Press `CTRL c` on each of the terminal windows when you're ready to stop
+        the process.
+      </p>
+      <h2>How It Works</h2>
+      <ul>
+        <li>
+          The first script uses ffmpeg to capture the screen via macs
+          `avfoundation` tool
+        </li>
+      </ul>
     </main>
 
     <footer>
