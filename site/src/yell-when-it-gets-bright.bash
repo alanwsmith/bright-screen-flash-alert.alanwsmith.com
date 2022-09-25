@@ -1,18 +1,24 @@
 #!/bin/bash
 
-trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+SCREEN=1
+BRIGHTNESS=40
+AUDIO_FILE="ahhhh.mp3"
+THROTTLE=0
+
+mkdir -p images
+
+trap "trap - SIGTERM && kill -- -$$" \
+    SIGINT SIGTERM EXIT
 
 ffmpeg -f avfoundation \
     -hide_banner \
     -loglevel panic \
-    -i "1:0" \
+    -i "$SCREEN:0" \
     -vf "fps=5,scale=100:-2" \
     -y "images/%04d.png" &
 
-THROTTLE=0
-
-# fswatch -l 0.1 -m poll_monitor -0 images/ | while read -d "" event
-fswatch -l 0.1 -0 images/ | while read -d "" event
+fswatch -l 0.1 -0 images/ | \
+    while read -d "" event
 do 
     if [ -e "$event" ]
     then
@@ -22,12 +28,12 @@ do
             info:`
         BRIGHT_I=`printf %.0f "$BRIGHT_F"`
         echo -n "$BRIGHT_I "
-        if [ $BRIGHT_I -gt 40 ]
+        if [ $BRIGHT_I -gt $BRIGHTNESS ]
         then
              if [ $THROTTLE -eq 0 ]
              then
                  THROTTLE=1
-                 afplay ahhhh.mp3 &
+                 afplay "$AUDIO_FILE" &
                  echo "YELL"
              fi
          else
@@ -36,6 +42,4 @@ do
          rm "$event"
     fi
 done
-
 wait 
-
