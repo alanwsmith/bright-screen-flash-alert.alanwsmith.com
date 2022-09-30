@@ -363,6 +363,17 @@ ffmpeg -f avfoundation -list_devices true -i ""
       <h2>Notes</h2>
       <ul>
         <li>
+          The script prints out the brightness levels to the terminal while it's
+          running. You can use that to determine where you want to set the
+          threshold if you decide to change it
+        </li>
+        <li>
+          The script is deisgned to clean up after itself by removing the images
+          it creates in the <code class="snippet">images</code> directory.
+          Sometimes that glitches and some get left. You can safely delete them
+          when your finished running the script
+        </li>
+        <li>
           When I run the script I get an error like:
           <pre><code>objc[86274]: class `NSKVONotifying_AVCaptureScreenInput' 
 not linked into application</code></pre>
