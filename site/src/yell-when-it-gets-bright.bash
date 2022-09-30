@@ -5,7 +5,7 @@ BRIGHTNESS=40
 AUDIO_FILE="ahhhh.mp3"
 THROTTLE=0
 
-mkdir -p images
+mkdir -p screen-images
 
 trap "trap - SIGTERM && kill -- -$$" \
     SIGINT SIGTERM EXIT
@@ -15,12 +15,12 @@ ffmpeg -f avfoundation \
     -loglevel panic \
     -i "$SCREEN:0" \
     -vf "fps=5,scale=100:-2" \
-    -y "images/%04d.png" &
+    -y "screen-images/%04d.png" &
 
-fswatch -l 0.1 -0 images/ | \
+fswatch -l 0.1 -0 "screen-images/" | \
     while read -d "" event
 do 
-    if [ -e "$event" ]
+    if [ -f "$event" ]
     then
         BRIGHT_F=`convert "$event" \
             -colorspace gray \

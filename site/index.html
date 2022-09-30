@@ -135,6 +135,9 @@
         padding: 9px;
         overflow: scroll;
       }
+      .snippet {
+        color: #372;
+      }
     </style>
 
     <script type="text/javascript">
@@ -151,118 +154,107 @@
     <main>
       <h1>Bright Screen Flash Alert</h1>
       <p>
-        The tech streamers I watch in
+        Most tech streamers I watch in
         <a
           href="https://www.twitch.tv/directory/game/Software%20and%20Game%20Development"
-          >Software and Game Dev</a
+          >Software and Game Dev on Twitch</a
         >
-        tend to use dark mode. It's not infrequent that they hit pages that are
-        considerally brighter when looking up documentation. I thought it would
-        be fun to trigger a little sound effect for the stream when that
+        use dark mode. They also tend to hit pages <em>without</em> dark mode
+        when looking up documentation. The bright flash can knock you back. I
+        thought it would be fun to trigger a yelling sound effect when that
         happens.
       </p>
+      <h2>Overview</h2>
       <p>
-        The two scripts below set up a quick way to do that on a mac.
+        This script plays a sound file when the overall screen brightness
+        crosses a certain threshold. This version works on a mac.
         <a
           href="https://github.com/alanwsmith/bright-screen-flash-alert.alanwsmith.com"
           >Pull requests</a
         >
-        for how to get it working on windows are welcome.
+        to produce versions for other platforms are welcome.
       </p>
 
-      <h2>The Scripts</h2>
+      <h2>The Script</h2>
+      <pre><code>#!/bin/bash
 
-      <hr />
-      <h4>Script 1: watch-screen.bash</h4>
-      <hr />
-      <pre><code>
-#!/bin/bash
+SCREEN=1
+BRIGHTNESS=40
+AUDIO_FILE="ahhhh.mp3"
+THROTTLE=0
 
-ffmpeg -f avfoundation -i "1:0" -vf "fps=2,scale=400:-2" -y images/%04d.png
-      </code></pre>
+mkdir -p images
 
-      <hr />
-      <h4>Script 2: yell-when-it-gets-bright.bash</h4>
-      <hr />
+trap "trap - SIGTERM && kill -- -$$" \
+    SIGINT SIGTERM EXIT
 
-      <pre><code>
-#!/bin/bash
+ffmpeg -f avfoundation \
+    -hide_banner \
+    -loglevel panic \
+    -i "$SCREEN:0" \
+    -vf "fps=5,scale=100:-2" \
+    -y "images/%04d.png" &
 
-ALERT_THROTTLE=0
-
-fswatch -0 images/ | while read -d "" event
+fswatch -l 0.1 -0 images/ | \
+    while read -d "" event
 do 
     if [ -e "$event" ]
     then
-        LIGHT_LEVEL_FLOAT=`convert "$event" -colorspace gray -format "%[fx:100*mean]" info:`
-        LIGHT_LEVEL_INT=`printf %.0f "$LIGHT_LEVEL_FLOAT"`
-        echo $LIGHT_LEVEL_INT
-        if [ $LIGHT_LEVEL_INT -gt 40 ]
+        BRIGHT_F=`convert "$event" \
+            -colorspace gray \
+            -format "%[fx:100*mean]" \
+            info:`
+        BRIGHT_I=`printf %.0f "$BRIGHT_F"`
+        echo -n "$BRIGHT_I "
+        if [ $BRIGHT_I -gt $BRIGHTNESS ]
         then
-            if [ $ALERT_THROTTLE -eq 0 ]
-            then
-                ALERT_THROTTLE=1
-                afplay ahhhh.mp3
-                echo "YELL"
-            fi
-        else
-            ALERT_THROTTLE=0
-        fi
-        rm "$event"
+             if [ $THROTTLE -eq 0 ]
+             then
+                 THROTTLE=1
+                 afplay "$AUDIO_FILE" &
+                 echo "YELL"
+             fi
+         else
+             THROTTLE=0
+         fi
+         rm "$event"
     fi
 done
-      </code></pre>
-      <hr />
+wait</code></pre>
+
       <h2>Prerequisites</h2>
       <p>
-        You'll need `ffmpeg`, `imagemagick`, and `fswatch`. They can be
-        installed with these
-        <a href="https://brew.sh/">Homebrew</a> commands if you don't already
-        have them
-      </p>
-      <p>
-        brew install ffmpeg<br />brew install imagemagick<br />brew install
-        fswatch
+        You'll need <code class="snippet">ffmpeg</code>,
+        <code class="snippet">imagemagick</code>, and
+        <code class="snippet">fswatch</code> to run the script. They can be
+        installed with <a href="https://brew.sh/">Homebrew</a> via these
+        commands if you don't already have them:
       </p>
 
-      <h2>Setup</h2>
-      <p>
-        The ffmpeg command in the script watches a specifics screen. To tell it
-        which one to watch, run this command:
-      </p>
-
-      <pre><code>
-ffmpeg -f avfoundation -list_devices true -i ""
-        </code></pre>
+      <pre><code>brew install ffmpeg
+brew install imagemagick
+brew install fswatch</code></pre>
 
       <h2>Usage</h2>
+      <p>Here's how to set things up:</p>
       <ol>
         <li>
-          Copy the code for the scripts above into two seperate files in the
-          same directory. One for `watch-screen.bash` and one for
-          `yell-when-it-gets-bright.bash`
+          Save the code for the script above into a new file called:<br />
+          <pre><code>yell-when-it-gets-bright.bash</code></pre>
         </li>
         <li>
-          Make the scripts executable from a terminal command line with:<br /><br />chmod
-          u+x watch-screen.bash<br /><br />and<br /><br />chmod u+x
-          yell-when-it-gets-bright.bash
+          Download
+          <a href="/src/ahhhh.mp3">the sound file</a>
+          and put it in the same directory as the script
         </li>
         <li>
-          Download the mp3 file
-          <a
-            href="https://github.com/alanwsmith/bright-screen-flash-alert.alanwsmith.com/blob/main/site/src/ahhhh.mp3?raw=true"
-            >from here</a
-          >
-          and put it in the same directory as the scripts.
+          Configure the screen to watch via the instructions in the
+          &quot;Picking A Screen&quot; section below
         </li>
         <li>
-          Make an `images` directory inside the directory you have your scripts
-        </li>
-        <li>
-          Run the scripts from the command line with<br /><br />
-          ./yell-when-it-gets-bright.bash
-          <br />
-          ./watch-screen.bash
+          And to start it up, run the script from a command line terminal
+          with:<br /><br />
+          <pre><code>/bin/bash yell-when-it-gets-bright.bash</code></pre>
         </li>
       </ol>
       <p>
@@ -270,14 +262,127 @@ ffmpeg -f avfoundation -list_devices true -i ""
         crosses a certain brightness threshold.
       </p>
       <p>
-        Press `CTRL c` on each of the terminal windows when you're ready to stop
-        the process.
+        Press <code class="snippet">CTRL c</code> in the terminal window when
+        you're ready to stop the process.
       </p>
+
+      <h2>Picking A Screen</h2>
+      <p>
+        The ffmpeg command in the script needs to be configured to watch a
+        specific screen. Run this command to get the data you need to set it up:
+      </p>
+
+      <pre><code>
+ffmpeg -f avfoundation -list_devices true -i ""
+        </code></pre>
+      <p>
+        That will spit out a bunch of stuff ending with something like this:
+      </p>
+
+      <pre><code>
+[AVFoundation indev @ 0x15a709999] AVFoundation video devices:
+[AVFoundation indev @ 0x15a709999] [0] FaceTime HD Camera
+[AVFoundation indev @ 0x15a709999] [1] Capture screen 0
+[AVFoundation indev @ 0x15a709999] [2] Capture screen 1
+[AVFoundation indev @ 0x15a709999] AVFoundation audio devices:
+[AVFoundation indev @ 0x15a709999] [0] MacBook Pro Microphone
+        </code></pre>
+
+      <p>
+        Pick the video device you want to use and update the
+        <code class="snippet">SCREEN</code> variable in the script. For example,
+        the output I get when I run the command includes
+        <code class="snippet">[1] Capture screen 0</code> so I setup my copy of
+        the script with
+        <code class="snippet">SCREEN=1</code>
+      </p>
+
+      <p>
+        If you have multiple screen and you're not sure which one to use, try
+        one and see if it's right. If not, try the other ones until you hit the
+        one you want.
+      </p>
+
+      <h2>Watch Out For Spaces</h2>
+      <p>
+        The script is written in bash. One trick with that is that can't leave
+        white space around the equal sign when setting varaibles. For example,
+        this wont' work:
+      </p>
+      <pre><code>SCREEN = 1</code></pre>
+
+      <p>You have to do this instead:</p>
+      <pre><code>SCREEN=1</code></pre>
+
+      <h2>The Sound File</h2>
+      <p>
+        The entire point of the script is to play a sound file when the screen
+        gets bright. I made this one which you can download if you'd like to use
+        it:
+      </p>
+
+      <p>
+        <a href="/src/ahhhh.mp3">ahhhh.mp3</a>
+      </p>
+
+      <p>
+        You can also use your own sound file by changing the path of the
+        <code class="snippet">AUDIO_FILE</code> variable in the script to point
+        to the one you'd like. (The script uses the
+        <code class="snippet">afplay</code> command which should handle most
+        things you throw at it.)
+      </p>
+
+      <h2>The Brightness Threshold</h2>
+      <p>
+        Changing the level of brightness that causes the alert is done with the
+        <code class="snippet">BRIGHTNESS</code> variable in the script. Play
+        with it to find something that works for you. (As with the other
+        variables, make sure not to leave spaces around the equal sign when
+        updating it)
+      </p>
+
       <h2>How It Works</h2>
       <ul>
         <li>
-          The first script uses ffmpeg to capture the screen via macs
-          `avfoundation` tool
+          The script creates an <code class="snippet">images</code> directory
+          when it starts
+        </li>
+        <li>
+          <code class="snippet">ffmpeg</code> captures five images of the screen
+          every second into the <code class="snippet">images</code> directory
+          (controlled via the <code class="snippet">fps=5</code> setting in the
+          script)
+        </li>
+        <li>
+          The <code class="snippet">fswatch</code> command watches the
+          <code class="snippet">images</code> directory and throws files over to
+          the <code class="snippet">convert</code> command from
+          <code class="snippet">ImageMagick</code>
+        </li>
+        <li>
+          That <code class="snippet">convert</code> command analyses the images
+          and reports an overall brightness level
+        </li>
+        <li>
+          The yell is triggered if that brightness level is over the one defined
+          in the <code class="snippet">BRIGHTNESS</code> varaible in the script
+        </li>
+        <li>
+          The value is stored so the yell doesn't occur again until the
+          brighness level has dipped below the threshold and jump back up again
+        </li>
+      </ul>
+      <p>And that's it. Enjoy!</p>
+      <h2>Notes</h2>
+      <ul>
+        <li>
+          When I run the script I get an error like:
+          <pre><code>objc[86274]: class `NSKVONotifying_AVCaptureScreenInput' 
+not linked into application</code></pre>
+
+          I think this is something to do with how ffmpeg is installed, but it
+          doesn't seem to cause me any issues. So, I just roll with it.
         </li>
       </ul>
     </main>
